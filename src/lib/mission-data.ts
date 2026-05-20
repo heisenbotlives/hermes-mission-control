@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
-import path from "node:path";
+import * as path from "node:path";
+import { readApprovalStore } from "./approval-store";
 
 export type ProjectSignal = {
   name: string;
@@ -111,35 +112,8 @@ export function getMissionData() {
     },
   ];
 
-  const approvals: ApprovalSignal[] = [
-    {
-      id: "connect-kanban",
-      title: "Connect real Hermes/Kanban task data",
-      requester: "Echo",
-      risk: "medium",
-      status: "Needs review",
-      action: "Read local task/session metadata and show it in Mission Control.",
-      whyItMatters: "This turns the dashboard from a demo into a real operator console.",
-    },
-    {
-      id: "local-persistence",
-      title: "Add local JSON persistence first",
-      requester: "Quill",
-      risk: "low",
-      status: "Queued",
-      action: "Create local data files for approvals, projects, activity, and agent state.",
-      whyItMatters: "It gives Mission Control memory without introducing cloud services or auth yet.",
-    },
-    {
-      id: "github-token-review",
-      title: "Review GitHub token scope separately",
-      requester: "Reviewer",
-      risk: "high",
-      status: "Needs review",
-      action: "Open a manual security checklist for GitHub sessions, apps, and token scopes.",
-      whyItMatters: "Your local GitHub auth is powerful; changing it should stay explicit.",
-    },
-  ];
+  const approvalStore = readApprovalStore();
+  const approvals = approvalStore.pending;
 
   const tasks: TaskSignal[] = [
     {
@@ -219,6 +193,7 @@ export function getMissionData() {
     projects,
     activity,
     approvals,
+    approvalHistory: approvalStore.history,
     tasks,
     system: {
       branch,
