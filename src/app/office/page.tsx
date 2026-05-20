@@ -1,6 +1,8 @@
 import { MissionShell } from "@/components/mission-shell";
 import { OfficeMap, agents } from "@/components/office-map";
 import { PageHeader, Panel, ProgressBar, StatusDot, TonePill } from "@/components/ui";
+import { buildCommandItems } from "@/lib/command-items";
+import { getHermesAdapterSnapshot } from "@/lib/hermes-adapter";
 import { getMissionData } from "@/lib/mission-data";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +27,10 @@ function ControlButton({ children, tone }: { children: React.ReactNode; tone: "g
 
 export default function OfficePage() {
   const data = getMissionData();
+  const hermesAdapter = getHermesAdapterSnapshot({ tasks: data.tasks, activity: data.activity });
 
   return (
-    <MissionShell>
+    <MissionShell commandItems={buildCommandItems(data)}>
       <PageHeader
         title="The Office"
         subtitle="AI team headquarters — live local view"
@@ -40,13 +43,23 @@ export default function OfficePage() {
         }
       />
 
-      <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-violet-950/45 via-slate-900 to-cyan-950/40 p-5 shadow-2xl shadow-black/20 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3 text-sm font-semibold text-violet-200"><span className="text-xl">✣</span> Demo Controls</div>
-        <div className="flex flex-wrap gap-3">
-          <ControlButton tone="green">▱ All Working</ControlButton>
-          <ControlButton tone="blue">♙ Gather</ControlButton>
-          <ControlButton tone="amber">▱ Run Meeting</ControlButton>
-          <ControlButton tone="cyan">☕ Watercooler</ControlButton>
+      <div className="mb-6 grid gap-4 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-violet-950/45 via-slate-900 to-cyan-950/40 p-5 shadow-2xl shadow-black/20 xl:grid-cols-[1fr_380px]">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3 text-sm font-semibold text-violet-200"><span className="text-xl">✣</span> Demo Controls</div>
+          <div className="flex flex-wrap gap-3">
+            <ControlButton tone="green">▱ All Working</ControlButton>
+            <ControlButton tone="blue">♙ Gather</ControlButton>
+            <ControlButton tone="amber">▱ Run Meeting</ControlButton>
+            <ControlButton tone="cyan">☕ Watercooler</ControlButton>
+          </div>
+        </div>
+        <div className="rounded-xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-wide text-cyan-200/70">Hermes adapter</p>
+            <TonePill tone="blue">{hermesAdapter.mode}</TonePill>
+          </div>
+          <p className="mt-2 text-sm font-semibold text-cyan-50">{hermesAdapter.tasks.length} local task signals exposed</p>
+          <p className="mt-2 text-xs leading-5 text-cyan-100/65">{hermesAdapter.warnings[0]}</p>
         </div>
       </div>
 

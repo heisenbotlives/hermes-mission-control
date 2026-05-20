@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { CommandPalette } from "@/components/command-palette";
+import { buildCommandItems, type CommandItem } from "@/lib/command-items";
 
 const navItems = [
   { label: "Tasks", icon: "▦", href: "/tasks" },
@@ -18,7 +20,7 @@ const navItems = [
   { label: "Team", icon: "♢", href: "/team", disabled: true },
 ];
 
-export function MissionShell({ children }: { children: ReactNode }) {
+export function MissionShell({ children, commandItems = buildCommandItems() }: { children: ReactNode; commandItems?: CommandItem[] }) {
   const pathname = usePathname();
 
   return (
@@ -69,11 +71,7 @@ export function MissionShell({ children }: { children: ReactNode }) {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]">⌘</div>
               <span className="font-semibold">Mission Control</span>
             </Link>
-            <div className="hidden h-10 w-72 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.05] px-4 text-sm text-zinc-500 md:flex">
-              <span>⌕</span>
-              <span>Search</span>
-              <kbd className="ml-auto rounded bg-white/[0.06] px-1.5 py-0.5 text-[11px] text-zinc-400">⌘K</kbd>
-            </div>
+            <CommandPalette items={commandItems} />
             <div className="ml-auto flex items-center gap-5 text-sm text-zinc-400">
               <button className="hidden hover:text-zinc-100 sm:inline">Ⅱ Pause</button>
               <button className="hidden hover:text-zinc-100 sm:inline">Ping Luke</button>

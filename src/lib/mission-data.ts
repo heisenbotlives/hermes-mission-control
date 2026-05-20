@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import * as path from "node:path";
 import { readApprovalStore } from "./approval-store";
+import { readMissionStore, slugifyProjectName } from "./mission-store";
 
 export type ProjectSignal = {
   name: string;
@@ -37,6 +38,23 @@ export type TaskSignal = {
   assignee: string;
   priority: "Low" | "Medium" | "High";
   project: string;
+};
+
+export type ProjectDetailData = {
+  project: ProjectSignal;
+  activeTasks: TaskSignal[];
+  pendingApprovals: ApprovalSignal[];
+  recentActivity: ActivitySignal[];
+  nextRecommendedAction: string;
+};
+
+export type TaskDetailData = {
+  task: TaskSignal;
+  project?: ProjectSignal;
+  projectSlug?: string;
+  pendingApprovals: ApprovalSignal[];
+  relatedActivity: ActivitySignal[];
+  nextRecommendedAction: string;
 };
 
 const HOME = process.env.HOME ?? "/Users/heisenbot";
@@ -158,6 +176,19 @@ export function getMissionData() {
     },
   ];
 
+  const missionStore = readMissionStore({ projects, tasks });
+  const managedProjects = missionStore.projects.map((project) =>
+    project.name === "Hermes Mission Control"
+      ? {
+          ...project,
+          status: gitCleanStatus(missionRoot),
+          path: missionRoot,
+          detail: `First managed project; branch ${branch}; latest commit ${latestCommit}`,
+        }
+      : project,
+  );
+  const managedTasks = missionStore.tasks;
+
   const activity: ActivitySignal[] = [
     {
       actor: "quill",
@@ -190,15 +221,62 @@ export function getMissionData() {
   ];
 
   return {
-    projects,
+    projects: managedProjects,
     activity,
     approvals,
     approvalHistory: approvalStore.history,
-    tasks,
+    tasks: managedTasks,
     system: {
       branch,
       latestCommit,
       updatedAt: missionStatus.mtime,
     },
+  };
+}
+
+export function getProjectDetailData(slug: string): ProjectDetailData | undefined {
+  const data = getMissionData();
+  const project = data.projects.find((candidate) => slugifyProjectName(candidate.name) === slug);
+
+  if (!project) return undefined;
+
+  const activeTasks = data.tasks.filter((task) => task.project === project.name && task.lane !== "Done");
+  const nextRecommendedAction =
+    project.name === "Hermes Mission Control"
+      ? "Connect real Hermes/Kanban task data"
+      : "Define the next project milestone and connect live task data";
+
+  return {
+    project,
+    activeTasks,
+    pendingApprovals: data.approvals,
+    recentActivity: data.activity.slice(0, 4),
+    nextRecommendedAction,
+  };
+}
+
+export function getTaskDetailData(id: string): TaskDetailData | undefined {
+  const data = getMissionData();
+  const task = data.tasks.find((candidate) => candidate.id === id);
+
+  if (!task) return undefined;
+
+  const project = data.projects.find((candidate) => candidate.name === task.project);
+  const projectSlug = project ? slugifyProjectName(project.name) : undefined;
+  const laneActions: Record<TaskSignal["lane"], string> = {
+    Backlog: "Clarify scope and acceptance criteria.",
+    Ready: "Start work on the next ready slice.",
+    "In progress": "Complete the current slice and update handoff notes.",
+    Blocked: "Resolve the blocker or review the required approval.",
+    Done: "Review completion notes and decide whether to ship or archive.",
+  };
+
+  return {
+    task,
+    project,
+    projectSlug,
+    pendingApprovals: data.approvals,
+    relatedActivity: data.activity.slice(0, 4),
+    nextRecommendedAction: laneActions[task.lane],
   };
 }

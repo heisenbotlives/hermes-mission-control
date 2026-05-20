@@ -1,6 +1,7 @@
 import { ApprovalInbox } from "@/components/approval-inbox";
 import { MissionShell } from "@/components/mission-shell";
 import { PageHeader, Panel, TonePill } from "@/components/ui";
+import { buildCommandItems } from "@/lib/command-items";
 import { getMissionData } from "@/lib/mission-data";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export default function ApprovalsPage() {
   const data = getMissionData();
 
   return (
-    <MissionShell>
+    <MissionShell commandItems={buildCommandItems(data)}>
       <PageHeader
         title="Approvals"
         subtitle="Decision queue for anything Hermes should not do without Luke explicitly approving it."

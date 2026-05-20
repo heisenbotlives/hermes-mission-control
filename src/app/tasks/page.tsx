@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { MissionShell } from "@/components/mission-shell";
 import { PageHeader, Panel, TonePill } from "@/components/ui";
+import { buildCommandItems } from "@/lib/command-items";
 import { getMissionData, type TaskSignal } from "@/lib/mission-data";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,7 @@ export default function TasksPage() {
   const data = getMissionData();
 
   return (
-    <MissionShell>
+    <MissionShell commandItems={buildCommandItems(data)}>
       <PageHeader
         title="Tasks"
         subtitle="A first Kanban-style view of Mission Control work. Real Hermes/Kanban integration comes next."
@@ -36,14 +38,20 @@ export default function TasksPage() {
 
               <div className="space-y-3">
                 {laneTasks.map((task) => (
-                  <article key={task.id} className="rounded-xl border border-white/[0.06] bg-black/20 p-4">
-                    <div className="mb-3 flex flex-wrap gap-2">
-                      <TonePill tone={priorityTone[task.priority]}>{task.priority}</TonePill>
-                      <TonePill tone="blue">{task.assignee}</TonePill>
-                    </div>
-                    <h3 className="text-sm font-semibold leading-5">{task.title}</h3>
-                    <p className="mt-3 text-xs text-zinc-500">{task.project}</p>
-                  </article>
+                  <Link
+                    key={task.id}
+                    href={`/tasks/${task.id}`}
+                    className="block rounded-xl border border-white/[0.06] bg-black/20 p-4 transition hover:border-blue-400/40 hover:bg-blue-400/[0.05] focus:outline-none focus:ring-2 focus:ring-blue-400/40"
+                  >
+                    <article>
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        <TonePill tone={priorityTone[task.priority]}>{task.priority}</TonePill>
+                        <TonePill tone="blue">{task.assignee}</TonePill>
+                      </div>
+                      <h3 className="text-sm font-semibold leading-5">{task.title}</h3>
+                      <p className="mt-3 text-xs text-zinc-500">{task.project}</p>
+                    </article>
+                  </Link>
                 ))}
 
                 {laneTasks.length === 0 && (
