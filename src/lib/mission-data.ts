@@ -87,11 +87,11 @@ export function getMissionData() {
 
   const projects: ProjectSignal[] = [
     {
-      name: "Mission Control",
+      name: "Hermes Mission Control",
       status: gitCleanStatus(missionRoot),
       path: missionRoot,
-      detail: `Branch ${branch}; latest commit ${latestCommit}`,
-      progress: 52,
+      detail: `First managed project; branch ${branch}; latest commit ${latestCommit}`,
+      progress: 58,
       owner: "Hermes + Luke",
     },
     {
@@ -122,7 +122,7 @@ export function getMissionData() {
       lane: "Done",
       assignee: "Codex",
       priority: "High",
-      project: "Mission Control",
+      project: "Hermes Mission Control",
     },
     {
       id: "approvals-page",
@@ -130,7 +130,7 @@ export function getMissionData() {
       lane: "In progress",
       assignee: "Quill",
       priority: "High",
-      project: "Mission Control",
+      project: "Hermes Mission Control",
     },
     {
       id: "kanban-mapping",
@@ -138,7 +138,7 @@ export function getMissionData() {
       lane: "Ready",
       assignee: "Echo",
       priority: "High",
-      project: "Mission Control",
+      project: "Hermes Mission Control",
     },
     {
       id: "project-pages",
