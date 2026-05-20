@@ -2,20 +2,40 @@ import { execFileSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import path from "node:path";
 
-type ProjectSignal = {
+export type ProjectSignal = {
   name: string;
   status: string;
   path: string;
   detail: string;
   progress: number;
+  owner: string;
 };
 
-type ActivitySignal = {
+export type ActivitySignal = {
   actor: string;
   event: string;
   detail: string;
   time: string;
   tone: "emerald" | "blue" | "amber" | "violet";
+};
+
+export type ApprovalSignal = {
+  id: string;
+  title: string;
+  requester: string;
+  risk: "low" | "medium" | "high";
+  status: "Needs review" | "Queued" | "Draft";
+  action: string;
+  whyItMatters: string;
+};
+
+export type TaskSignal = {
+  id: string;
+  title: string;
+  lane: "Backlog" | "Ready" | "In progress" | "Blocked" | "Done";
+  assignee: string;
+  priority: "Low" | "Medium" | "High";
+  project: string;
 };
 
 const HOME = process.env.HOME ?? "/Users/heisenbot";
@@ -70,7 +90,8 @@ export function getMissionData() {
       status: gitCleanStatus(missionRoot),
       path: missionRoot,
       detail: `Branch ${branch}; latest commit ${latestCommit}`,
-      progress: 46,
+      progress: 52,
+      owner: "Hermes + Luke",
     },
     {
       name: "Story app",
@@ -78,6 +99,7 @@ export function getMissionData() {
       path: storyPath,
       detail: storyStatus.exists ? `Last touched ${storyStatus.mtime}` : "Expected under Documents/story-app",
       progress: storyStatus.exists ? 64 : 12,
+      owner: "Product build",
     },
     {
       name: "AI marketing army",
@@ -85,6 +107,80 @@ export function getMissionData() {
       path: "Obsidian / future repo",
       detail: "Portfolio operating-system concept waiting for structured project pages.",
       progress: 38,
+      owner: "Strategy agents",
+    },
+  ];
+
+  const approvals: ApprovalSignal[] = [
+    {
+      id: "connect-kanban",
+      title: "Connect real Hermes/Kanban task data",
+      requester: "Echo",
+      risk: "medium",
+      status: "Needs review",
+      action: "Read local task/session metadata and show it in Mission Control.",
+      whyItMatters: "This turns the dashboard from a demo into a real operator console.",
+    },
+    {
+      id: "local-persistence",
+      title: "Add local JSON persistence first",
+      requester: "Quill",
+      risk: "low",
+      status: "Queued",
+      action: "Create local data files for approvals, projects, activity, and agent state.",
+      whyItMatters: "It gives Mission Control memory without introducing cloud services or auth yet.",
+    },
+    {
+      id: "github-token-review",
+      title: "Review GitHub token scope separately",
+      requester: "Reviewer",
+      risk: "high",
+      status: "Needs review",
+      action: "Open a manual security checklist for GitHub sessions, apps, and token scopes.",
+      whyItMatters: "Your local GitHub auth is powerful; changing it should stay explicit.",
+    },
+  ];
+
+  const tasks: TaskSignal[] = [
+    {
+      id: "routes",
+      title: "Create real left-nav routes",
+      lane: "Done",
+      assignee: "Codex",
+      priority: "High",
+      project: "Mission Control",
+    },
+    {
+      id: "approvals-page",
+      title: "Build approval inbox detail page",
+      lane: "In progress",
+      assignee: "Quill",
+      priority: "High",
+      project: "Mission Control",
+    },
+    {
+      id: "kanban-mapping",
+      title: "Map Hermes Kanban data model",
+      lane: "Ready",
+      assignee: "Echo",
+      priority: "High",
+      project: "Mission Control",
+    },
+    {
+      id: "project-pages",
+      title: "Turn portfolio ideas into project pages",
+      lane: "Ready",
+      assignee: "Scout",
+      priority: "Medium",
+      project: "AI marketing army",
+    },
+    {
+      id: "security-review",
+      title: "Review editor extensions manually",
+      lane: "Blocked",
+      assignee: "Reviewer",
+      priority: "Medium",
+      project: "Hermes security",
     },
   ];
 
@@ -92,7 +188,7 @@ export function getMissionData() {
     {
       actor: "quill",
       event: "prototype updated",
-      detail: "Left-navigation office shell is being wired into the app.",
+      detail: "Left-navigation office shell is now being split into real pages.",
       time: "now",
       tone: "violet",
     },
@@ -122,11 +218,8 @@ export function getMissionData() {
   return {
     projects,
     activity,
-    approvals: [
-      "Connect real Hermes/Kanban task data?",
-      "Add local SQLite persistence?",
-      "Review GitHub token scope separately?",
-    ],
+    approvals,
+    tasks,
     system: {
       branch,
       latestCommit,
